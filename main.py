@@ -1,25 +1,34 @@
-# Para instalar o paho-mqtt use o comando pip install paho-mqtt
-import paho.mqtt.client as mqtt
+import time
+import serial
+# Importa o publish do paho-mqtt
+import paho.mqtt.publish as publish
 
-# The callback for when the client receives a CONNACK response from the server.
-def on_connect(client, userdata, flags, rc):
-    # O subscribe fica no on_connect pois, caso perca a conexão ele a renova
-    # Lembrando que quando usado o #, você está falando que tudo que chegar após a barra do topico, será recebido
-    client.subscribe("topico/#")
+ser = serial.Serial('/dev/ttyACM0', 9600)
 
-# Callback responável por receber uma mensagem publicada no tópico acima
-def on_message(client, userdata, msg):
-    print(msg.topic+" -  "+str(msg.payload))
+contador = 0
 
-client = mqtt.Client()
-client.on_connect = on_connect
-client.on_message = on_message
+# Broker do Thingspeak
+host_name = "mqtt.thingspeak.com";
 
-# Seta um usuário e senha para o Broker, se não tem, não use esta linha
-client.username_pw_set("1040541", password="ZXFGZOITO9R0LNTD")
+# Channel ID do Thingspeak
+user = "1040541";
 
-# Conecta no MQTT Broker, no meu caso, o Mosquitto
-client.connect("mqtt.thingspeak.com", 1883, 60)
+# Write API Key do Thingspeak
+pwd = "CAXEC5ZB8C3C2BQ2";
 
-# Inicia o loop
-client.loop_forever()
+# Numero do campo (field) que deseja enviar o valor
+nro_campo = "1";
+
+topic = "channels/"+user+"/publish/fields/field"+nro_campo+"/"+ pwd;
+
+time.sleep(1.5)
+
+while (contador < 300):
+	contador = contador + 1
+	# Valor a enviar
+	valor = ser.readline()
+
+	# Publica ao canal
+	publish.single(topic, valor, hostname=host_name);
+
+
